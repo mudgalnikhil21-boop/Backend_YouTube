@@ -8,6 +8,11 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 const generateAccessAndRefreshTokens = async(userId) => {
     try {
         const user = await User.findById(userId)
+        if(!user)
+        {
+            throw new ApiError(404, "User not found")
+        }
+
         const accessToken = user.generateAccessToken()
         const refreshToken = user.generateRefreshToken()
 
@@ -17,6 +22,7 @@ const generateAccessAndRefreshTokens = async(userId) => {
         return {accessToken,refreshToken};
 
     } catch (error) {
+        console.error("Error generating access and refresh tokens: ", error);
         throw new ApiError(500, "Something went wrong wile generating refresh and access tokens")
     }
 }
@@ -86,7 +92,7 @@ const registerUser = asyncHandler (async (req, res) => {
         throw new ApiError(500, "something went wrong while registering the user")
     }
 
-    return res.status(201).json(new ApiResponse(true, createdUser, "User registered successfully"))
+    return res.status(201).json(new ApiResponse(201, createdUser, "User registered successfully"))
     
 })
 
@@ -100,9 +106,9 @@ const loginUser = asyncHandler (async (req, res) => {
     // save the refreshToken in the database
     // send the refreshToken and accessToken as cookies
 
-    const {usename, email, password} = req.body
+    const {username, email, password} = req.body
 
-    if(!username || !email)
+    if(!username && !email)
     {
         throw new ApiError(400, "username or email is requpired")
     }
@@ -111,15 +117,15 @@ const loginUser = asyncHandler (async (req, res) => {
         $or: [{email},{username}]
     })
 
-    if(!User)
+    if(!user)
     {
-        throw ApiError(404, "user does not exists")
+        throw new ApiError(404, "user does not exists")
     }
 
 
-    const isPasswordValid = user.isPasswordCorrect(password)
+    const isPasswordValid = await user.isPasswordCorrect(password)
     if(!isPasswordValid){
-        throw ApiError(401,"Incorrect Passsword")
+        throw new ApiError(401,"Incorrect Passsword")
     }
 
     const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id)
