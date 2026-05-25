@@ -1,7 +1,8 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/ApiError.js"
 import {User} from "../models/user.model.js"
-import { uploadOnCloudinary, deleteOnCloudinary } from "../utils/cloudinary.js"
+import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import { deleteFromCloudinary } from "../utils/deleteFromCloudinary.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken";
 
@@ -326,7 +327,7 @@ const updateUserAvatar = asyncHandler( async (req, res) => {
         throw new ApiError(500, "error while updting the avatar url on the database")
     }
 
-    await deleteOnCloudinary(user.avatar)
+    await deleteFromCloudinary(user.avatar)
 
     return res
             .status(200)
@@ -364,7 +365,7 @@ const updateUserCoverImage = asyncHandler( async (req, res) => {
         throw new ApiError(500, "error while updting the coverImage url on the database")
     }
 
-    await deleteOnCloudinary(user.coverImage)
+    await deleteFromCloudinary(user.coverImage)
 
     return res
             .status(200)
