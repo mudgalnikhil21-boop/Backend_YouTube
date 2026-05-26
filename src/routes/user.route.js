@@ -24,7 +24,6 @@ router.route("/login").post(
 )
 
 // secured routes
-
 router.route("/logout").post(
     verifyJWT,
     logoutUser
